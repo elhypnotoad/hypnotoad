@@ -8,9 +8,9 @@ defmodule Package do
       {status, _} = shell("dpkg -l #{opts[:name]} >/dev/null 1>/dev/null 2>/dev/null", status: true)
     end
     if status == 0 do
-      log "Package installed, nothing else to do\n"
+      log "Package installed, nothing else to do"
     else
-      log "Package is not installed\n"
+      log "Package is not installed"
     end
     status == 0
   end
