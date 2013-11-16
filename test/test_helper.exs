@@ -33,6 +33,10 @@ defmodule Hypnotoad.TestCase do
 
   teardown_all _context do
   	Hypnotoad.Connection.execute(:vagrant_host, "docker stop sshd && docker rm sshd")
+    Enum.each(Hypnotoad.Modules.modules, fn({module, _}) ->
+      :code.delete(module)
+      :code.purge(module)
+    end)
     :application.stop(:hypnotoad)
     :application.stop(:cowboy)
     :application.stop(:ranch)
