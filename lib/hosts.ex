@@ -30,18 +30,18 @@ defmodule Hypnotoad.Hosts do
   	Enum.map(hosts, fn
       ({{name, opts}, facts}) when is_list(facts) ->
         type = opts[:type] || @default_type
-        {name, {@types[type].new(opts), HashDict.new(facts)}}
+        {name, {@types[type].new(opts), facts}}
       ({name, opts}) when is_list(opts) ->
         type = opts[:type] || @default_type
-        {name, {@types[type].new(opts), HashDict.new}}
+        {name, {@types[type].new(opts), []}}
     end)
     L.debug "Loaded hosts ${hosts}", hosts: hosts
   	{:noreply, state(hosts: hosts)}
   end
 
-  def handle_call({:add_fact, host, {name, value}}, _from, state(hosts: hosts) = s) do
+  def handle_call({:add_fact, host, fact}, _from, state(hosts: hosts) = s) do
     {host_data, facts} = hosts[host]
-    facts = Dict.put(facts, name, value)
+    facts = [fact|facts]
     hosts = Dict.put(hosts, host, {host_data, facts})
     {:reply, :ok, state(s, hosts: hosts)}
   end

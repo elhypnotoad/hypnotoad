@@ -12,10 +12,19 @@
     		</tr>
     	</thead>
     	<tbody>
-    	  <tr ng-repeat="host in hosts">
+        <tr style="display: none" ng-repeat-start="host in hosts"></tr>
+        <tr>
     	  	<td>{{ host.name }}</td>
     	  	<td><span class="badge">{{ host.value.type }}</span>&nbsp; {{ host.value.user }}@{{ host.value.host }}:{{ host.value.port }}</td>
+          <td ng-if="!host.showFacts && host.facts != nil"><button class="btn btn-xs btn-info" ng-click="showFacts($index)">Facts</button></td>
+          <td ng-if="host.showFacts"><button class="btn btn-xs btn-info active" ng-click="showFacts($index)">Facts</button></td>
     	  </tr>
+        <tr ng-if="host.showFacts">
+          <td colspan="3">
+            {{ host.facts }}
+          </td>
+        </tr>
+        <tr style="display: none" ng-repeat-end></tr>
     	</tbody>
     </table>
   </div>

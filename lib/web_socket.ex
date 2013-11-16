@@ -64,7 +64,7 @@ defmodule Hypnotoad.WebSocket do
   defp handle_command("hosts", packet) do
   	hosts = Hypnotoad.Hosts.hosts 
   	|> Enum.map(fn({name, {info, facts}}) ->
-  	  [name: "#{name}", value: Hypnotoad.Host.to_json(info), facts: Dict.to_list(facts)]
+  	  [name: "#{name}", value: Hypnotoad.Host.to_json(info), facts: facts]
   	end)
   	reply(packet, [hosts: hosts])
   end
