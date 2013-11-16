@@ -27,9 +27,13 @@ defmodule Hypnotoad.Hosts do
   def handle_cast(:init, state()) do
     {hosts, _} = Path.join(Hypnotoad.path, "hosts") |> File.read! |> Code.eval_string()
     hosts =
-  	Enum.map(hosts, fn({name, opts}) ->
-      type = opts[:type] || @default_type
-      {name, {@types[type].new(opts), HashDict.new}}
+  	Enum.map(hosts, fn
+      ({{name, opts}, facts}) when is_list(facts) ->
+        type = opts[:type] || @default_type
+        {name, {@types[type].new(opts), HashDict.new(facts)}}
+      ({name, opts}) when is_list(opts) ->
+        type = opts[:type] || @default_type
+        {name, {@types[type].new(opts), HashDict.new}}
     end)
     L.debug "Loaded hosts ${hosts}", hosts: hosts
   	{:noreply, state(hosts: hosts)}
