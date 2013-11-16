@@ -17,9 +17,11 @@ defmodule Hypnotoad.Modules do
   	{:ok, state()}
   end
 
-  def handle_cast(:init, state() = s) do
-    ignore_module_conflict = Code.compiler_options[:ignore_module_conflict] || false
-    Code.compiler_options(ignore_module_conflict: true)
+  def handle_cast(:init, state(modules: modules) = s) do
+    Enum.each(modules, fn({module, _}) ->
+      :code.delete(module)
+      :code.purge(module)
+    end)
   	modules = Path.join([Hypnotoad.path, "**/**.exs"])
   	|> Path.wildcard
   	|> Enum.map(fn(file) ->
@@ -32,7 +34,6 @@ defmodule Hypnotoad.Modules do
       end)
   	end)
     |> List.flatten |> Enum.reverse
-    Code.compiler_options(ignore_module_conflict: ignore_module_conflict)
     Enum.each(modules, fn({module, _}) ->
       if module.plan?, do: Hypnotoad.Plan.start(module: module)      
     end)
