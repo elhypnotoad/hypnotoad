@@ -31,6 +31,7 @@
 	    	  	<td ng-if="job.status == 'post_test'"><span class="label label-warning">{{ job.status }}</span></td>
 	    	  	<td ng-if="job.status == 'ready'"><span class="label label-default">{{ job.status }}</span></td>
             <td ng-if="job.status == 'pending'"><span class="label label-default">{{ job.status }}</span></td>
+            <td ng-if="job.status == 'excluded'"><span class="label label-success">{{ job.status }}</span></td>
 	    	  	<td ng-if="!job.showLog && job.output != nil && job.output != ''"><button class="btn btn-xs btn-info" ng-click="showLog($index)">Log</button></td>
             <td ng-if="job.showLog"><button class="btn btn-xs btn-info active" ng-click="showLog($index)">Log</button></td>
 	    	 <tr ng-if="job.showLog">

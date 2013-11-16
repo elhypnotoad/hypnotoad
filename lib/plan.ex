@@ -45,6 +45,7 @@ defmodule Hypnotoad.Plan do
       try do
         :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :success})
         :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :failed})
+        :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :excluded})
       rescue _ ->
       end
       start_module(host, module, [])
