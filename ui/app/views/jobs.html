@@ -3,9 +3,9 @@
   <li class="active">{{ plan }}</a></li>
 </ol>
 
-<div class="panel panel-info">
+<div class="panel" ng:class="{'panel-info': planObject.status == 'ready', 'panel-primary': planObject.status == 'running', 'panel-success': planObject.status == 'done', 'panel-danger': planObject.status == 'failed'}">
   <div class="panel-heading">
-  	Jobs
+  	Jobs Execution (Started {{ planObject.start_timestamp * 1000|date:'medium' }}<span ng-if="planObject.end_timestamp">, finished {{ planObject.end_timestamp * 1000|date:'medium' }}</span>)
   </div>
   <div class="panel-body">
     <table class="table table-hover table-condensed table-responsive ">

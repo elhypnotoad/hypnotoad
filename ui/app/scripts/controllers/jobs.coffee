@@ -6,6 +6,10 @@ angular.module('uiApp')
     $scope.jobs = []
     $scope.plan = $routeParams.plan
 
+    Channel.connected().then (ch) ->
+      ch.send({command: "plans"}).then (resp) ->
+      	$scope.planObject = _.find(resp.plans,(p) -> p.name == $scope.plan)
+
     $scope.showLog = (i) ->
       $scope.jobs[i].showLog = not $scope.jobs[i].showLog
 

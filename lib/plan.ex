@@ -54,7 +54,7 @@ defmodule Hypnotoad.Plan do
   end
 
   def handle_cast(:ready, state(jobs: jobs) = s) do
-    update_status(:running, s)
+    update_status(:running, s, start_timestamp: Hypnotoad.Utils.timestamp)
     lc {_, _, _, job} inlist jobs, do: Hypnotoad.Job.ready(job)
     {:noreply, s}
   end
@@ -69,11 +69,11 @@ defmodule Hypnotoad.Plan do
     done_jobs = [{host, module, options, pid}|done_jobs]
     cond do
       jobs == [] and status == :failed ->
-        update_status(:failed, s)
+        update_status(:failed, s, end_timestamp: Hypnotoad.Utils.timestamp)
       jobs == [] and failed ->
-        update_status(:failed, s)
+        update_status(:failed, s, end_timestamp: Hypnotoad.Utils.timestamp)
       jobs == [] ->
-        update_status(:done, s)
+        update_status(:done, s, end_timestamp: Hypnotoad.Utils.timestamp)
       true ->
         :ok
     end
@@ -84,9 +84,11 @@ defmodule Hypnotoad.Plan do
     {:noreply, s}
   end
 
-  defp update_status(type, state(module: module)) do
+  defp update_status(type, state(module: module), extra // []) do
+    props = :gproc.lookup_local_properties(__MODULE__)
+    start_timestamp = props[self][:start_timestamp]
     :gproc.unreg({:p,:l, __MODULE__})
-    :gproc.add_local_property(__MODULE__, [module: module, status: type])    
+    :gproc.add_local_property(__MODULE__, Keyword.merge([module: module, status: type, start_timestamp: start_timestamp], extra))
     :gproc_ps.publish(:l, Hypnotoad.Plan, self)
   end
 

@@ -115,7 +115,8 @@ defmodule Hypnotoad.WebSocket do
 
   defp plans(packet) do
     plans = Enum.map(:gproc.lookup_local_properties(Hypnotoad.Plan), fn({_pid, opts}) ->
-      [name: inspect(opts[:module]), description: opts[:module].description, status: "#{opts[:status]}"]
+      [name: inspect(opts[:module]), description: opts[:module].description, status: "#{opts[:status]}",
+       start_timestamp: opts[:start_timestamp], end_timestamp: opts[:end_timestamp]]
     end)
     reply(packet, [plans: plans])
   end
