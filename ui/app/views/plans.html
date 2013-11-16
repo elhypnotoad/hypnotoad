@@ -17,7 +17,7 @@
     	  	<td>
     	  		{{ plan.name }} 
     	  	</td>
-    	  	<td>{{ plan.description }}</td>
+    	  	<td style="word-wrap: break-word; max-width: 200px;">{{ plan.description }}</td>
     	  	<td>
     	  		<button class="btn btn-danger btn-xs" ng-click="run(plan.name)" ng-if="plan.status == 'ready'">Run</button>
     	  		<button class="btn btn-danger btn-xs" ng-click="run(plan.name)" ng-if="plan.status == 'done' || plan.status == 'failed'">Re-Run</button>
