@@ -1,0 +1,4 @@
+[
+  {:vagrant_host, host: "127.0.0.1", port: 10222, user: "vagrant"},
+  {:vagrant_container, host: "127.0.0.1", port: 12222, user: "root", password: "screencast"}
+]

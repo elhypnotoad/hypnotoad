@@ -1,0 +1,55 @@
+defmodule Hypnotoad.Modules do
+  use Hypnotoad.Common
+  use GenServer.Behaviour
+
+  def start_link do
+  	:gen_server.start_link {:local, __MODULE__}, __MODULE__, [], []
+  end
+
+  def modules do
+    :gen_server.call(__MODULE__, :modules)
+  end
+
+  defrecordp :state, modules: []
+
+  def init(_) do
+  	:gen_server.cast(self, :init)
+  	{:ok, state()}
+  end
+
+  def handle_cast(:init, state() = s) do
+    ignore_module_conflict = Code.compiler_options[:ignore_module_conflict] || false
+    Code.compiler_options(ignore_module_conflict: true)
+  	modules = Path.join([Hypnotoad.path, "**/**.exs"])
+  	|> Path.wildcard
+  	|> Enum.map(fn(file) ->
+      Enum.reduce(Code.load_file(file), [], fn({module, _binary}, acc) ->
+        if hypnotoad_module?(module) do
+          [{module, file}|acc]
+        else
+          acc
+        end
+      end)
+  	end)
+    |> List.flatten |> Enum.reverse
+    Code.compiler_options(ignore_module_conflict: ignore_module_conflict)
+    Enum.each(modules, fn({module, _}) ->
+      if module.plan?, do: Hypnotoad.Plan.start(module: module)      
+    end)
+    L.debug "Loaded modules ${modules}", modules: modules
+    :gproc_ps.publish :l, {__MODULE__, :modules_reloaded}, modules
+  	{:noreply, state(s, modules: modules)}
+  end
+
+  def handle_call(:modules, _from, state(modules: modules) = s) do
+    {:reply, modules, s}
+  end
+
+  defp hypnotoad_module?(module) do
+    if function_exported?(module, :__info__, 1) do
+      module.__info__(:attributes)[:hypnotoad_module] == [true]
+    else
+      false
+    end
+  end
+end

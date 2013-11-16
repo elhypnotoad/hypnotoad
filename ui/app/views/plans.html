@@ -1,0 +1,39 @@
+<div class="panel panel-info">
+  <div class="panel-heading">
+    <h3 class="panel-title">Plans</h3>
+  </div>
+  <div class="panel-body">
+    <table class="table table-hover table-condensed table-responsive table-striped">
+    	<thead>
+    		<tr>
+    			<td>Name</td>
+    			<td>Description</td>
+    			<td></td>
+    			<td></td>
+    		</tr>
+    	</thead>
+    	<tbody>
+    	  <tr ng-repeat="plan in plans">
+    	  	<td>
+    	  		{{ plan.name }} 
+    	  	</td>
+    	  	<td>{{ plan.description }}</td>
+    	  	<td>
+    	  		<button class="btn btn-danger btn-xs" ng-click="run(plan.name)" ng-if="plan.status == 'ready'">Run</button>
+    	  		<button class="btn btn-danger btn-xs" ng-click="run(plan.name)" ng-if="plan.status == 'done' || plan.status == 'failed'">Re-Run</button>
+    	  		<button class="btn btn-info btn-xs" ng-click="showJobs(plan.name)" ng-if="plan.status != 'ready'">Jobs</button>
+    	    </td>
+    	  	<td>
+    	  		<span ng-if="plan.status == 'ready'" class="label label-info">{{ plan.status }}</span>
+    	  		<span ng-if="plan.status == 'running'" class="label label-warning">{{ plan.status }}</span>
+    	  		<span ng-if="plan.status == 'done'" class="label label-success">{{ plan.status }}</span>
+                <span ng-if="plan.status == 'failed'" class="label label-danger">{{ plan.status }}</span>
+            </td>
+    	  </tr>
+    	</tbody>
+    </table>
+  </div>
+  <div class="panel-footer">
+  	<button class="btn btn-danger" ng-click="reload()">Reload</button>
+  </div>
+</div>

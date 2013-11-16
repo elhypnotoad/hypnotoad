@@ -1,0 +1,22 @@
+<div class="panel panel-info">
+  <div class="panel-heading">
+    <h3 class="panel-title">Hosts</h3>
+  </div>
+  <div class="panel-body">
+    <table class="table table-hover table-condensed table-responsive table-striped">
+    	<thead>
+    		<tr>
+    			<td>Host</td>
+    			<td>Information</td>
+          <td></td>
+    		</tr>
+    	</thead>
+    	<tbody>
+    	  <tr ng-repeat="host in hosts">
+    	  	<td>{{ host.name }}</td>
+    	  	<td><span class="badge">{{ host.value.type }}</span>&nbsp; {{ host.value.user }}@{{ host.value.host }}:{{ host.value.port }}</td>
+    	  </tr>
+    	</tbody>
+    </table>
+  </div>
+</div>

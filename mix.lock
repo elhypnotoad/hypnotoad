@@ -1,0 +1,9 @@
+[ "cowboy": {:git, "git://github.com/extend/cowboy.git", "5d27d4d1758a56f12913576ffc85ec73792bdc42", []},
+  "cowlib": {:git, "git://github.com/extend/cowlib.git", "63298e8e160031a70efff86a1acde7e7db1fcda6", [{:ref, "0.4.0"}]},
+  "exlogger": {:git, "git://github.com/ElixirWerkz/exlogger.git", "9cddb08b47cc7c8a156474a8cf2a319fb9c7b87a", []},
+  "exreloader": {:git, "git://github.com/yrashk/exreloader.git", "1c23229b917893fcc03b1b4b2c932900baf3ba58", []},
+  "genx": {:git, "git://github.com/yrashk/genx.git", "1b857fa422a47269d5f151ecababd83f4835527d", []},
+  "gproc": {:git, "git://github.com/uwiger/gproc.git", "7bb96517d60f3bbe6eacac9fb0e7150f12be2ae4", []},
+  "jsex": {:git, "git://github.com/talentdeficit/jsex.git", "c9df36f07b2089a73ab6b32074c01728f1e5a2e1", []},
+  "jsx": {:git, "git://github.com/talentdeficit/jsx.git", "e50af6e109cb03bd26acf715cbc77de746507d1d", [{:tag, "v1.4.3"}]},
+  "ranch": {:git, "git://github.com/extend/ranch.git", "7eb82e6750c28335b0bd58009cddfc1630364516", [{:ref, "0.8.5"}]} ]
