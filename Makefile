@@ -6,6 +6,8 @@ ifeq ($(UNAME_S),Darwin)
     VMWARE=vmware_fusion
 endif
 
+HYPNOTOAD_PATH ?= example
+
 .PHONY: test all
 
 all:
@@ -22,4 +24,4 @@ test:
 	@mix test --no-start
 
 start:
-	@HYPNOTOAD_PATH=example iex -S mix
+	@HYPNOTOAD_PATH=$(HYPNOTOAD_PATH) mix run --no-halt
