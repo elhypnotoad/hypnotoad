@@ -17,6 +17,10 @@ defmodule Hypnotoad.Hosts do
     :gen_server.call(__MODULE__, :hosts)
   end
 
+  def facts(host) do
+    :gen_server.call(__MODULE__, {:facts, host})
+  end
+
   defrecordp :state, hosts: []
 
   def init(_) do
@@ -49,6 +53,11 @@ defmodule Hypnotoad.Hosts do
   def handle_call({:host, name}, _from, state(hosts: hosts) = s) do
     {info, _} = hosts[name]
     {:reply, info, s}
+  end
+
+  def handle_call({:facts, name}, _from, state(hosts: hosts) = s) do
+    {_, facts} = hosts[name]
+    {:reply, facts, s}
   end
 
   def handle_call(:hosts, _from, state(hosts: hosts) = s) do

@@ -125,6 +125,10 @@ defmodule Hypnotoad.Module do
     :gen_server.call(Hypnotoad.Hosts, {:add_fact, host, fact})
   end
 
+  def host_assertions do
+    Hypnotoad.Hosts.facts(host)
+  end
+
   def log(text) do
     :gproc_ps.publish(:l, {Hypnotoad.Shell, Process.get(:ref)}, "# #{text}\n")
   end
