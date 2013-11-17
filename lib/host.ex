@@ -13,6 +13,12 @@ defprotocol Hypnotoad.Host do
   @spec download(t, Path.t, term) :: term
   def download(t, file, ref)
 
+  @spec forward(t, Keyword.t) :: term
+  def forward(t, options)
+
+  @spec stop_forward(t, term) :: term
+  def stop_forward(t, ref)
+
   @spec to_json(t) :: term
   def to_json(t)
 end

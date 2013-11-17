@@ -15,6 +15,16 @@ defmodule Hypnotoad.Connection do
     :gen_server.call(pid, {:download, file, opts}, :infinity)
   end
 
+  def forward(host, opts) do
+    {pid, _opts} = connection(host, [])
+    :gen_server.call(pid, {:forward, opts}, :infinity)    
+  end
+
+  def stop_forward(host, ref) do
+    {pid, _opts} = connection(host, [])
+    :gen_server.call(pid, {:stop_forward, ref}, :infinity)    
+  end
+
   defp connection(host, opts) do
     host_spec = Hypnotoad.Hosts.host(host)
     if nil?(host_spec) do
@@ -68,6 +78,14 @@ defmodule Hypnotoad.Connection do
       :gen_server.reply(from, data)
     end)
     {:noreply, s}
+  end
+
+  def handle_call({:forward, opts}, _from, state(connection: connection) = s) do
+    {:reply, Hypnotoad.Host.forward(connection, opts), s}
+  end
+
+  def handle_call({:stop_forward, ref}, _from, state(connection: connection) = s) do
+    {:reply, Hypnotoad.Host.stop_forward(connection, ref), s}
   end
 
 end

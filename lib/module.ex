@@ -158,4 +158,12 @@ defmodule Hypnotoad.Module do
     Hypnotoad.Connection.download(host, file)
   end
 
+  defmacro tcpip_forward(options, do: block) do
+    quote do
+      ref = Hypnotoad.Connection.forward(host, unquote(options))
+      result = unquote(block)
+      Hypnotoad.Connection.stop_forward(host)
+    end
+  end
+
 end

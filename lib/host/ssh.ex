@@ -31,6 +31,14 @@ defimpl Hypnotoad.Host, for: Hypnotoad.Host.SSH do
     Hypnotoad.Host.SSH.Channel.download(pid, file, ref)
   end
 
+  def forward(SSH[] = ssh, opts) do
+    Hypnotoad.Host.SSH.Forwarder.start(Keyword.put(opts, :connection, ssh))
+  end
+
+  def stop_forward(SSH[] = _ssh, ref) do
+    Hypnotoad.Host.SSH.Forwarder.stop(ref)
+  end
+
   def to_json(SSH[] = ssh) do
     [host: ssh.host, port: ssh.port, user: ssh.user, password: ssh.password, type: "ssh"]
   end
