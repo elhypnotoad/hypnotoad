@@ -163,6 +163,7 @@ defmodule Hypnotoad.Module do
       ref = Hypnotoad.Connection.forward(host, unquote(options))
       result = unquote(block)
       Hypnotoad.Connection.stop_forward(host)
+      result
     end
   end
 
