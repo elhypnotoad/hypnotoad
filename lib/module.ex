@@ -42,8 +42,10 @@ defmodule Hypnotoad.Module do
       def run, do: :ok
       def filter(_opts), do: filter
       def filter, do: true
+      def before_filter(_opts), do: before_filter
+      def before_filter, do: true
 
-      defoverridable test: 0, test: 1, run: 0, run: 1, filter: 0, filter: 1
+      defoverridable test: 0, test: 1, run: 0, run: 1, filter: 0, filter: 1, before_filter: 0, before_filter: 1
 
       def plan? do
         unquote(opts[:plan] || false)
@@ -70,9 +72,13 @@ defmodule Hypnotoad.Module do
         Enum.filter(unquote(requirements), fn({_p, options}) -> not nil?(options) end)
       end
 
-      defoverridable test: 0, test: 1, run: 0, run: 1, filter: 0, filter: 1
+      defoverridable test: 0, test: 1, run: 0, run: 1, filter: 0, filter: 1, before_filter: 0, before_filter: 1
 
       def filter(opts) do
+        super(Keyword.merge(@hypnotoad_default_attributes, opts))
+      end
+
+      def before_filter(opts) do
         super(Keyword.merge(@hypnotoad_default_attributes, opts))
       end
 

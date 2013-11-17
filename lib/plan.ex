@@ -31,10 +31,14 @@ defmodule Hypnotoad.Plan do
   end
 
   defp start_module(host, module, args) do
-    start_job(host, module, args, module.requirements(args))
-    lc {req_mod, req_args} inlist module.requirements(args) do
-      start_module(host, req_mod, req_args)
+    Process.put(:host, host)
+    if module.before_filter(args) do
+      start_job(host, module, args, module.requirements(args))
+      lc {req_mod, req_args} inlist module.requirements(args) do
+        start_module(host, req_mod, req_args)
+      end
     end
+    Process.delete(:host)
   end
 
   def handle_cast(:run, state(module: module, done_jobs: done_jobs) = s) do
