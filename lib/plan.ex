@@ -49,7 +49,7 @@ defmodule Hypnotoad.Plan do
     result
   end
 
-  def handle_cast(:run, state(module: module, done_jobs: done_jobs) = s) do
+  def handle_cast(:run, state(module: module, done_jobs: done_jobs, running?: false) = s) do
     update_status(:preparing, s)
     lc {_, _, _, job} inlist done_jobs, do: Hypnotoad.Job.done(job)
     # Start jobs
@@ -64,6 +64,10 @@ defmodule Hypnotoad.Plan do
     end)
     :gen_server.cast(self, :ready)
     {:noreply, state(s, jobs: [], done_jobs: [], running?: true, failed: nil)}
+  end
+
+  def handle_cast(:run, state() = s) do
+    {:noreply, s}
   end
 
   def handle_cast(:ready, state(jobs: jobs) = s) do
