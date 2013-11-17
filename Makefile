@@ -8,9 +8,10 @@ endif
 
 HYPNOTOAD_PATH ?= example
 
-.PHONY: test all
+.PHONY: test all iex
 
 all:
+	@mix deps.get
 	@mix compile
 
 vagrant.up:
@@ -21,7 +22,11 @@ vagrant.destroy:
 	@vagrant destroy
 
 test:
+	@MIX_ENV=test mix deps.get
 	@mix test --no-start
 
 start:
 	@HYPNOTOAD_PATH=$(HYPNOTOAD_PATH) mix run --no-halt
+
+iex:
+	@HYPNOTOAD_PATH=$(HYPNOTOAD_PATH) iex -S mix
