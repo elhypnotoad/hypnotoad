@@ -2,8 +2,11 @@
   "cowlib": {:git, "git://github.com/extend/cowlib.git", "63298e8e160031a70efff86a1acde7e7db1fcda6", [{:ref, "0.4.0"}]},
   "exlogger": {:git, "git://github.com/ElixirWerkz/exlogger.git", "4072d9750565f27bc1f601817a4fe60ed45a9a2e", []},
   "exreloader": {:git, "git://github.com/yrashk/exreloader.git", "1c23229b917893fcc03b1b4b2c932900baf3ba58", []},
+  "finalizer": {:git, "git://github.com/meh/elixir-finalizer.git", "9c38d9145824a46c66f1a010e137a953a6c78e04", []},
   "genx": {:git, "git://github.com/yrashk/genx.git", "1b857fa422a47269d5f151ecababd83f4835527d", []},
   "gproc": {:git, "git://github.com/uwiger/gproc.git", "7bb96517d60f3bbe6eacac9fb0e7150f12be2ae4", []},
   "jsex": {:git, "git://github.com/talentdeficit/jsex.git", "c9df36f07b2089a73ab6b32074c01728f1e5a2e1", []},
   "jsx": {:git, "git://github.com/talentdeficit/jsx.git", "e50af6e109cb03bd26acf715cbc77de746507d1d", [{:tag, "v1.4.3"}]},
-  "ranch": {:git, "git://github.com/extend/ranch.git", "7eb82e6750c28335b0bd58009cddfc1630364516", [{:ref, "0.8.5"}]} ]
+  "ranch": {:git, "git://github.com/extend/ranch.git", "7eb82e6750c28335b0bd58009cddfc1630364516", [{:ref, "0.8.5"}]},
+  "resource": {:git, "git://github.com/tonyrog/resource.git", "b9e1adcadcc8cb59130e0bbecbbe6777bb8d7c78", []},
+  "socket": {:git, "git://github.com/meh/elixir-socket.git", "66a88f0b13b1aeaef32c8de5543074f36f51b3f7", []} ]

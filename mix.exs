@@ -25,6 +25,7 @@ defmodule Hypnotoad.Mixfile do
      {:exlogger, github: "ElixirWerkz/exlogger"},
      {:cowboy,   github: "extend/cowboy"},
      {:jsex,     github: "talentdeficit/jsex"},
+     {:socket,   github: "meh/elixir-socket"},
     ] ++ deps(Mix.env)
   end
 
