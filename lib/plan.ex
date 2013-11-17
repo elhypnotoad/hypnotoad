@@ -32,13 +32,21 @@ defmodule Hypnotoad.Plan do
 
   defp start_module(host, module, args) do
     Process.put(:host, host)
-    if module.before_filter(args) do
-      start_job(host, module, args, module.requirements(args))
-      lc {req_mod, req_args} inlist module.requirements(args) do
-        start_module(host, req_mod, req_args)
-      end
+    result = if module.before_filter(args) do
+      requirements = Enum.reduce(module.requirements(args), [], fn({req_mod, req_args} = req, acc) ->
+        if start_module(host, req_mod, req_args) do
+          [req|acc]
+        else
+          acc
+        end
+      end)
+      start_job(host, module, args, requirements)
+      true
+    else
+      false
     end
     Process.delete(:host)
+    result
   end
 
   def handle_cast(:run, state(module: module, done_jobs: done_jobs) = s) do
