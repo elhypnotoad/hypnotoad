@@ -27,7 +27,7 @@ angular.module('uiApp')
       $rootScope.$apply () ->
         matrix[id].notify(packet)
 
-    channelDeferred = $callback.defer()
+    channelDeferred = $q.defer()
     Channel.connected = () ->
       channelDeferred.promise
 
@@ -41,13 +41,9 @@ angular.module('uiApp')
 
     connect = (url) ->
       socket = new WebSocket(url)
-      socket.onclose = () ->
-        setTimeout((->
-          connect(url)
-        ), 1000)
       socket.onopen = () -> 
         channel = new ChannelObject(socket)
-        channelDeferred.notify(channel)
+        channelDeferred.resolve(channel)
 
 
     getConfig().then (url) ->
