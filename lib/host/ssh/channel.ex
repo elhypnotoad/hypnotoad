@@ -33,7 +33,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
     #{cmd}
     """
     :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
-    # ((
+    # (( #{unless user == "root", do: "sudo"}
     #{cmd}
     # ))
     """
