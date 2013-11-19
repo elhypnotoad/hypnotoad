@@ -30,12 +30,21 @@ defmodule Hypnotoad.Plan do
     {:reply, module, s}
   end
 
-  defp start_module(host, module, args) do
+  defp start_module(host, module, args, extra_req // nil) do
+    case extra_req do
+      {m, a} -> extra_req = {m, a, nil}
+      _ -> :ok
+    end
     Process.put(:host, host)
     result = if module.before_filter(args) do
-      requirements = Enum.reduce(module.requirements(args), [], fn({req_mod, req_args} = req, acc) ->
-        if start_module(host, req_mod, req_args) do
-          [req|acc]
+      reqs = if extra_req do
+        [extra_req|module.requirements(args)]
+      else
+        module.requirements(args)
+      end
+      requirements = Enum.reduce(reqs, [], fn({req_mod, req_args, parent}, acc) ->
+        if start_module(host, req_mod, req_args, parent) do
+          [{req_mod, req_args}|acc]
         else
           acc
         end

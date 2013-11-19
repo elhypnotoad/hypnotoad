@@ -2,26 +2,46 @@ defmodule Hypnotoad.Module do
 
   use Hypnotoad.Common
 
-  defmacro requires(name, do: block) do
-    name = Macro.escape(name)
-    opts = Macro.escape(block)
-    quote do
-      @hypnotoad_requirements {unquote(name), unquote(opts)}
+  #defmacro requires(name, do: block) do
+  #  name = Macro.escape(name)
+  #  opts = Macro.escape(block)
+  #  quote do
+  #    @hypnotoad_requirements {unquote(name), unquote(opts)}
+  #  end
+  #end
+
+  defmacro requires(name, opts, block_opts) do
+    __requires__(name, opts, block_opts)
+  end
+
+  defmacro requires(name, opts // []) do
+    cond do
+      Keyword.has_key?(opts, :do) or Keyword.has_key?(opts, :only)  ->
+        __requires__(name, [], opts)
+      true ->
+        __requires__(name, opts, do: nil)
     end
   end
 
-  defmacro requires(name, opts) do
+  defp __requires__(name, opts, block_opts) do
     name = Macro.escape(name)
     opts = Macro.escape(opts)
+    do_block = block_opts[:do]
+    only_block = if Keyword.has_key?(block_opts, :only), do: Macro.escape(block_opts[:only]), else: true
     quote do
-      @hypnotoad_requirements {unquote(name), unquote(opts)}
-    end
-  end
-
-  defmacro requires(name) do
-    name = Macro.escape(name)
-    quote do
-      @hypnotoad_requirements {unquote(name), []}
+      import Hypnotoad.Module
+      name = unquote(name)
+      opts = unquote(opts)
+      only = unquote(only_block)
+      parent = Enum.first(@hypnotoad_requires_parent)
+      @hypnotoad_requirements (quote do
+        if unquote(only) do
+          {unquote(name), unquote(opts), unquote(parent)}
+        end
+      end)
+      @hypnotoad_requires_parent [{unquote(name), unquote(opts)}|@hypnotoad_requires_parent]
+      unquote(do_block)
+      @hypnotoad_requires_parent tl(@hypnotoad_requires_parent)
     end
   end
 
@@ -30,11 +50,13 @@ defmodule Hypnotoad.Module do
       use Hypnotoad.Common
       Module.register_attribute __MODULE__, :hypnotoad_module, persist: true, accumulate: false
       Module.register_attribute __MODULE__, :hypnotoad_requirements, persist: false, accumulate: true
+      Module.register_attribute __MODULE__, :hypnotoad_requires_parent, persist: false, accumulate: false
       Module.register_attribute __MODULE__, :hypnotoad_default_attributes, persist: false, accumulate: false
       Module.register_attribute __MODULE__, :shortdoc, persist: true, accumulate: false
 
       @hypnotoad_module true
       @hypnotoad_default_attributes unquote(opts[:default_attributes] || [])
+      @hypnotoad_requires_parent []
 
       def test(_opts), do: test
       def test, do: true
@@ -69,7 +91,7 @@ defmodule Hypnotoad.Module do
       def requirements(attributes // @hypnotoad_default_attributes) do
         var!(attributes) = Keyword.merge(@hypnotoad_default_attributes, attributes)
         var!(attributes)
-        Enum.filter(unquote(requirements), fn({_p, options}) -> not nil?(options) end)
+        unquote(requirements) |> Enum.filter(&(not nil?(&1)))
       end
 
       defoverridable test: 0, test: 1, run: 0, run: 1, filter: 0, filter: 1, before_filter: 0, before_filter: 1
