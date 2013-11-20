@@ -39,12 +39,12 @@ defmodule Hypnotoad.Host.SSH.Channel do
     # ))
     """
     S.lock({Hypnotoad.Host.SSH.Connection, conn})
-    {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
+    {:ok, sftp_channel} = sftp_channel(conn)
     :ok = :ssh_sftp.write_file(sftp_channel, Path.join(["/", "tmp", splitter]), file_content)
     :ssh_sftp.stop_channel(sftp_channel)
     S.unlock({Hypnotoad.Host.SSH.Connection, conn})
     S.lock({Hypnotoad.Host.SSH.Connection, conn})
-    {:ok, ch} = :ssh_connection.session_channel(conn, :infinity)
+    {:ok, ch} = channel(conn)
     unless user == "root" do
     	:ssh_connection.exec(conn, ch, String.to_char_list!("sudo sh -c 'sh /tmp/#{splitter} ; echo $? > /tmp/#{splitter}' ; E=`cat /tmp/#{splitter}` ; rm -f /tmp/#{splitter}; exit $E"), :infinity)
     else 
@@ -58,7 +58,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
     # Uploading #{file}
     """
     S.lock({Hypnotoad.Host.SSH.Connection, conn})
-    {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
+    {:ok, sftp_channel} = sftp_channel(conn)
     case :ssh_sftp.write_file(sftp_channel, file, content) do
       :ok ->
         :ssh_sftp.stop_channel(sftp_channel)
@@ -81,7 +81,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
         # Uploading #{file} to #{new_path} (temporarily)
         """
         S.lock({Hypnotoad.Host.SSH.Connection, conn})
-        {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
+        {:ok, sftp_channel} = sftp_channel(conn)
         :ok = :ssh_sftp.write_file(sftp_channel, new_path, content)
         S.unlock({Hypnotoad.Host.SSH.Connection, conn})
         :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
@@ -101,7 +101,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
     # Downloading #{file}
     """
     S.lock({Hypnotoad.Host.SSH.Connection, conn})
-    {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
+    {:ok, sftp_channel} = sftp_channel(conn)
     {:ok, data} = :ssh_sftp.read_file(sftp_channel, file)
     :ssh_sftp.stop_channel(sftp_channel)
     S.unlock({Hypnotoad.Host.SSH.Connection, conn})
@@ -140,6 +140,22 @@ defmodule Hypnotoad.Host.SSH.Channel do
 
   def handle_info({:ssh_cm, _, _}, state() = s) do
   	{:noreply, s}
+  end
+
+  defp sftp_channel(conn) do
+    case :ssh_sftp.start_channel(conn) do
+      {:ok, sftp} -> {:ok, sftp}
+      {:open_error, _, 'open failed', _} ->
+        sftp_channel(conn)
+    end
+  end
+
+  defp channel(conn) do
+    case :ssh_connection.session_channel(conn, :infinity) do
+      {:ok, ch} -> {:ok, ch}
+      {:open_error, _, 'open failed', _} ->
+        channel(conn)
+    end
   end
 
 end
