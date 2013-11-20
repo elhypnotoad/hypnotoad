@@ -56,14 +56,26 @@ defmodule Hypnotoad.Job do
     spawn_link(fn ->
       Process.put(:ref, me)
       Process.put(:host, host)
+      :gproc_ps.publish(:l, {Hypnotoad.Shell, me}, """)
+      ## #{inspect module}.before_filter
+      """
       if module.filter(opts) do
         update_status(:testing, s, me)
+        :gproc_ps.publish(:l, {Hypnotoad.Shell, me}, """)
+        ## #{inspect module}.test
+        """
         unless module.test(opts) do
           L.debug "Running job ${module} ${options} on host ${host}: test didn't pass", module: module, options: options, host: host
           update_status(:running, s, me)
+          :gproc_ps.publish(:l, {Hypnotoad.Shell, me}, """)
+          ## #{inspect module}.run
+          """
           module.run(opts)
           L.debug "Running job ${module} ${options} on host ${host}: executed", module: module, options: options, host: host
           update_status(:post_test, s, me)
+          :gproc_ps.publish(:l, {Hypnotoad.Shell, me}, """)
+          ## #{inspect module}.test
+          """
           if module.test(opts) do
             L.debug "Job ${module} ${options} succeeded on host ${host}", module: module, options: options, host: host
             update_status(:success, s, me)
