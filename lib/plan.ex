@@ -61,7 +61,7 @@ defmodule Hypnotoad.Plan do
     update_status(:preparing, s)
     lc {_, _, _, job} inlist done_jobs, do: Hypnotoad.Job.done(job)
     # Start jobs
-    :ets.delete(overrides)
+    :ets.match_delete(overrides, :"_")
     Enum.each(Hypnotoad.Hosts.hosts, fn({host, _}) ->
       try do
         :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :success})
@@ -114,8 +114,12 @@ defmodule Hypnotoad.Plan do
   end
 
   def handle_info({:"DOWN", _ref, _type, pid, info}, state(jobs: jobs, running?: true) = s) do
-    {host, module, options, _pid} = Enum.find(jobs, fn({_, _, _, pid1}) -> pid1 == pid end)
-    L.error "Job ${module} ${options} at host ${host} exited with ${info}", module: module, options: options, host: host, info: info
+    case Enum.find(jobs, fn({_, _, _, pid1}) -> pid1 == pid end) do
+      {host, module, options, _pid} ->
+        L.error "Job ${module} ${options} at host ${host} exited with ${info}", module: module, options: options, host: host, info: info
+      _ ->
+        :ok # we already wiped jobs out
+    end        
     {:noreply, s}
   end
 
