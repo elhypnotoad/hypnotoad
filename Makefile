@@ -25,7 +25,7 @@ test:
 	@MIX_ENV=test mix deps.get
 	@mix test --no-start
 
-start:
+start: all
 	@HYPNOTOAD_PATH=$(HYPNOTOAD_PATH) mix run --no-halt
 
 iex:
