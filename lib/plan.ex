@@ -19,31 +19,30 @@ defmodule Hypnotoad.Plan do
     :gen_server.cast(server, :run)
   end
 
-  defrecordp :state, module: nil, jobs: [], done_jobs: [], running?: false, failed: false
+  defrecordp :state, module: nil, jobs: [], done_jobs: [], running?: false, failed: false, overrides: nil
 
   def init(opts) do
     :gproc.add_local_property(__MODULE__, Keyword.put(opts, :status, :ready))
-    {:ok, state(module: opts[:module])}
+    {:ok, state(module: opts[:module], overrides: :ets.new(__MODULE__.Overrides, []))}
   end
 
   def handle_call(:module, _from, state(module: module) = s) do
     {:reply, module, s}
   end
 
-  defp start_module(host, module, args, extra_req // nil) do
-    case extra_req do
-      {m, a} -> extra_req = {m, a, nil}
-      _ -> :ok
-    end
+  defp start_module(host, module, args, overrides) do
     Process.put(:host, host)
     result = if module.before_filter(args) do
-      reqs = if extra_req do
-        [extra_req|module.requirements(args)]
-      else
-        module.requirements(args)
-      end
-      requirements = Enum.reduce(reqs, [], fn({req_mod, req_args, parent}, acc) ->
-        if start_module(host, req_mod, req_args, parent) do
+      reqs = module.requirements(args) ++ Enum.map(:ets.lookup(overrides, {module, args}), fn({_, {m, a}}) ->
+        {m, a, nil}
+      end)
+      Enum.each(reqs, fn({req_mod, req_args, parent}) ->
+        if parent do
+          :ets.insert(overrides, {{req_mod, req_args}, parent})
+        end
+      end)
+      requirements = Enum.reduce(reqs, [], fn({req_mod, req_args, _parent}, acc) ->
+        if start_module(host, req_mod, req_args, overrides) do
           [{req_mod, req_args}|acc]
         else
           acc
@@ -58,10 +57,11 @@ defmodule Hypnotoad.Plan do
     result
   end
 
-  def handle_cast(:run, state(module: module, done_jobs: done_jobs, running?: false) = s) do
+  def handle_cast(:run, state(module: module, done_jobs: done_jobs, running?: false, overrides: overrides) = s) do
     update_status(:preparing, s)
     lc {_, _, _, job} inlist done_jobs, do: Hypnotoad.Job.done(job)
     # Start jobs
+    :ets.delete(overrides)
     Enum.each(Hypnotoad.Hosts.hosts, fn({host, _}) ->
       try do
         :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :success})
@@ -69,7 +69,7 @@ defmodule Hypnotoad.Plan do
         :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :excluded})
       rescue _ ->
       end
-      start_module(host, module, [])
+      start_module(host, module, [], overrides)
     end)
     :gen_server.cast(self, :ready)
     {:noreply, state(s, jobs: [], done_jobs: [], running?: true, failed: nil)}
@@ -85,8 +85,8 @@ defmodule Hypnotoad.Plan do
     {:noreply, s}
   end
 
-  def handle_cast({:new_job, pid}, state(jobs: jobs) = s) do
-    {:noreply, state(s, jobs: Enum.uniq([pid|jobs]))}
+  def handle_cast({:new_job, job}, state(jobs: jobs) = s) do
+    {:noreply, state(s, jobs: Enum.uniq([job|jobs]))}
   end
 
   def handle_info({:gproc_ps_event, {Hypnotoad.Job, host, status}, {module, options}}, state(jobs: jobs, done_jobs: done_jobs, running?: true, failed: failed) = s) do
@@ -107,7 +107,8 @@ defmodule Hypnotoad.Plan do
         end
         {:noreply, state(s, jobs: jobs, done_jobs: done_jobs, running?: jobs != [], failed: failed || (status == :failed))}
       nil ->
-        L.error "Job ${module} ${options} on host ${host} reported status ${status} but was not in the list of pending jobs", module: module, options: options, status: status, host: host
+        L.error "Job ${module} ${options} on host ${host} reported status ${status} but was not in the list of pending jobs, in the done jobs: ${done?}",
+                module: module, options: options, status: status, host: host, done?: Enum.any?(done_jobs, fn({host1, module1, options1, _pid}) -> host1 == host and module1 == module and options1 == options end)
         {:noreply, s}
     end 
   end
