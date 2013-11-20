@@ -5,7 +5,7 @@ angular.module('uiApp')
 
     $scope.jobs = []
     $scope.plan = $routeParams.plan
-    $scope.filter = ""
+    $scope.filter = $location.search().q
 
     Channel.connected().then (ch) ->
       ch.send({command: "plans"}).then (resp) ->
