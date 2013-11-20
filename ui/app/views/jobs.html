@@ -25,7 +25,7 @@
     		</tr>
     	</thead>
     	<tbody>
-    	  <tr style="display: none" ng-repeat-start="job in jobs"></tr>
+    	  <tr style="display: none" ng-repeat-start="job in jobs track by identity(job)"></tr>
     	  	<tr ng-class="{'warning': plan == job.module}">
 	    	  	<td ng-if="job.module != plan">{{ job.module }}</td>
             <td ng-if="job.module == plan"><b>{{ job.module }}</b></td>

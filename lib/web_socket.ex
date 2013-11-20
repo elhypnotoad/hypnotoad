@@ -129,8 +129,10 @@ defmodule Hypnotoad.WebSocket do
       unless is_binary(host), do: host = inspect(host)
       options = opts[:options]
       if options == [], do: options = [{}]
+      hash = :erlang.phash2({opts[:module], options, host, opts[:output], opts[:status]})
       [module: inspect(opts[:module]), options: options, host: host,
-       status: "#{opts[:status]}", output: opts[:output]]
+       status: "#{opts[:status]}", output: opts[:output],
+       id: "#{hash}"]
     end)
     reply(packet, [jobs: jobs])
   end

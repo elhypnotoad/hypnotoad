@@ -18,3 +18,5 @@ angular.module('uiApp')
       	jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {showLog: _.find($scope.jobs, (j) -> j.module is job.module and _.isEqual(j.options, job.options))?.showLog}))
       	$scope.jobs = jobs
 
+    $scope.identity = (job) ->
+      job.id
