@@ -29,7 +29,7 @@
     	  	<tr ng-class="{'warning': plan == job.module}">
 	    	  	<td ng-if="job.module != plan">{{ job.module }}</td>
             <td ng-if="job.module == plan"><b>{{ job.module }}</b></td>
-	    	  	<td style="word-wrap: break-word; max-width: 200px;">{{ job.options }}</td>
+	    	  	<td style="word-wrap: break-word">{{ job.options }}</td>
 	    	  	<td>{{ job.host }}</td>
 	    	  	<td ng-if="job.status == 'failed'"><span class="label label-danger">{{ job.status }}</span></td>
 	    	  	<td ng-if="job.status == 'success'"><span class="label label-success">{{ job.status }}</span></td>
