@@ -5,6 +5,7 @@ angular.module('uiApp')
 
     $scope.jobs = []
     $scope.plan = $routeParams.plan
+    $scope.filter = ""
 
     Channel.connected().then (ch) ->
       ch.send({command: "plans"}).then (resp) ->
@@ -15,8 +16,15 @@ angular.module('uiApp')
 
     Channel.connected().then (ch) ->
       ch.send({command: "jobs", plan: $scope.plan }).then (resp) ->
-      	jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {showLog: _.find($scope.jobs, (j) -> j.id == job.id)?.showLog}))
-      	$scope.jobs = jobs
+       jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {optionsText: angular.toJson(job.options), showLog: _.find($scope.jobs, (j) -> j.id == job.id)?.showLog}))
+       $scope.jobs = jobs
 
     $scope.identity = (job) ->
       job.id
+
+    $scope.match = (job, filter) ->
+      (job.module.match(RegExp(filter,'i')) != null) or
+      (job.status.match(RegExp(filter,'i')) != null) or
+      (job.host.match(RegExp(filter,'i')) != null) or
+      (job.output.match(RegExp(filter,'i')) != null) or
+      (job.optionsText.match(RegExp(filter,'i')) != null)

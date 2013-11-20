@@ -12,6 +12,7 @@
 <div class="panel" ng:class="{'panel-info': planObject.status == 'ready', 'panel-primary': planObject.status == 'running', 'panel-success': planObject.status == 'done', 'panel-danger': planObject.status == 'failed'}" ng-if="planObject.start_timestamp != undefined">
   <div class="panel-heading">
   	Jobs Execution (Started {{ planObject.start_timestamp * 1000|date:'medium' }}<span ng-if="planObject.end_timestamp">, finished {{ planObject.end_timestamp * 1000|date:'medium' }}</span>)
+    <input type="sarch" class="form-control input-sm" placeholder="Filter" class="pull-right" ng-model="filter">
   </div>
   <div class="panel-body">
     <table class="table table-hover table-condensed table-responsive ">
@@ -26,7 +27,7 @@
     	</thead>
     	<tbody>
     	  <tr style="display: none" ng-repeat-start="job in jobs track by identity(job)"></tr>
-    	  	<tr ng-class="{'warning': plan == job.module}">
+    	  	<tr ng-class="{'warning': plan == job.module}" ng-if="match(job, filter)">
 	    	  	<td ng-if="job.module != plan">{{ job.module }}</td>
             <td ng-if="job.module == plan"><b>{{ job.module }}</b></td>
 	    	  	<td style="word-wrap: break-word">{{ job.options }}</td>
@@ -43,7 +44,7 @@
             <td ng-if="job.showLog"><button class="btn btn-xs btn-info active" ng-click="showLog($index)">Log</button></td>
             <td ng-if="job.output == nil || job.output == ''"></td>
          </tr>
-	    	 <tr ng-if="job.showLog">
+	    	 <tr ng-if="job.showLog && match(job, filter)">
 		  		<td colspan="5">
 		  			<pre style="color: #eee; background: black; margin: 0; line-height: 1.3; font-family: monaco, "Courier New", Courier, monospace;" >{{job.output}}</pre>
 				</td>
