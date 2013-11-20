@@ -106,6 +106,12 @@ defmodule Hypnotoad.Plan do
     {:noreply, state(s, jobs: jobs, done_jobs: done_jobs, running?: jobs != [], failed: failed || (status == :failed))}
   end
 
+  def handle_info({:"DOWN", _ref, _type, pid, info}, state(jobs: jobs, running?: true) = s) do
+    {host, module, options, _pid} = Enum.find(jobs, fn({_, _, _, pid1}) -> pid1 == pid end)
+    L.error "Job ${module} ${options} at host ${host} exited with ${info}", module: module, options: options, host: host, info: info
+    {:noreply, s}
+  end
+
   def handle_info(_, state() = s) do
     {:noreply, s}
   end
@@ -120,6 +126,7 @@ defmodule Hypnotoad.Plan do
 
   defp start_job(host, module, options, reqs) do
     {:ok, pid} = Hypnotoad.Job.start(host: host, module: module, requirements: reqs, options: options, plan: self)
+    Process.monitor(pid)
     :gen_server.cast(self, {:new_job, {host, module, options, pid}})
   end
 
