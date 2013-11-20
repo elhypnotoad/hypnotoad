@@ -90,20 +90,26 @@ defmodule Hypnotoad.Plan do
   end
 
   def handle_info({:gproc_ps_event, {Hypnotoad.Job, host, status}, {module, options}}, state(jobs: jobs, done_jobs: done_jobs, running?: true, failed: failed) = s) do
-    {_, _, _, pid} = Enum.find(jobs, fn({host1, module1, options1, _pid}) -> host1 == host and module1 == module and options1 == options end)
-    jobs = jobs -- [{host, module, options, pid}]
-    done_jobs = [{host, module, options, pid}|done_jobs]
-    cond do
-      jobs == [] and status == :failed ->
-        update_status(:failed, s, end_timestamp: Hypnotoad.Utils.timestamp)
-      jobs == [] and failed ->
-        update_status(:failed, s, end_timestamp: Hypnotoad.Utils.timestamp)
-      jobs == [] ->
-        update_status(:done, s, end_timestamp: Hypnotoad.Utils.timestamp)
-      true ->
-        :ok
-    end
-    {:noreply, state(s, jobs: jobs, done_jobs: done_jobs, running?: jobs != [], failed: failed || (status == :failed))}
+    matched_job = Enum.find(jobs, fn({host1, module1, options1, _pid}) -> host1 == host and module1 == module and options1 == options end)
+    case matched_job do
+      {_, _, _, pid} ->
+        jobs = jobs -- [{host, module, options, pid}]
+        done_jobs = [{host, module, options, pid}|done_jobs]
+        cond do
+          jobs == [] and status == :failed ->
+            update_status(:failed, s, end_timestamp: Hypnotoad.Utils.timestamp)
+          jobs == [] and failed ->
+            update_status(:failed, s, end_timestamp: Hypnotoad.Utils.timestamp)
+          jobs == [] ->
+            update_status(:done, s, end_timestamp: Hypnotoad.Utils.timestamp)
+          true ->
+            :ok
+        end
+        {:noreply, state(s, jobs: jobs, done_jobs: done_jobs, running?: jobs != [], failed: failed || (status == :failed))}
+      nil ->
+        L.error "Job ${module} ${options} on host ${host} reported status ${status} but was not in the list of pending jobs", module: module, options: options, status: status, host: host
+        {:noreply, s}
+    end 
   end
 
   def handle_info({:"DOWN", _ref, _type, pid, info}, state(jobs: jobs, running?: true) = s) do
