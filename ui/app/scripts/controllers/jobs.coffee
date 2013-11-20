@@ -15,7 +15,7 @@ angular.module('uiApp')
 
     Channel.connected().then (ch) ->
       ch.send({command: "jobs", plan: $scope.plan }).then (resp) ->
-      	jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {showLog: _.find($scope.jobs, (j) -> j.module is job.module and _.isEqual(j.options, job.options))?.showLog}))
+      	jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {showLog: _.find($scope.jobs, (j) -> j.id == job.id)?.showLog}))
       	$scope.jobs = jobs
 
     $scope.identity = (job) ->
