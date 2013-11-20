@@ -39,18 +39,17 @@ defmodule Hypnotoad.Host.SSH.Channel do
     # ))
     """
     S.lock({Hypnotoad.Host.SSH.Connection, conn})
-    {:ok, ch} = :ssh_connection.session_channel(conn, :infinity)
-    S.lock({Hypnotoad.Host.SSH.Connection, conn})
     {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
     :ok = :ssh_sftp.write_file(sftp_channel, Path.join(["/", "tmp", splitter]), file_content)
     :ssh_sftp.stop_channel(sftp_channel)
     S.unlock({Hypnotoad.Host.SSH.Connection, conn})
+    S.lock({Hypnotoad.Host.SSH.Connection, conn})
+    {:ok, ch} = :ssh_connection.session_channel(conn, :infinity)
     unless user == "root" do
     	:ssh_connection.exec(conn, ch, String.to_char_list!("sudo sh -c 'sh /tmp/#{splitter} ; echo $? > /tmp/#{splitter}' ; E=`cat /tmp/#{splitter}` ; rm -f /tmp/#{splitter}; exit $E"), :infinity)
     else 
       :ssh_connection.exec(conn, ch, String.to_char_list!("sh /tmp/#{splitter} ; E=$? ; rm -f /tmp/#{splitter}; exit $E"), :infinity)
     end
-    S.unlock({Hypnotoad.Host.SSH.Connection, conn})
   	{:noreply, state(s, from: from, splitter: splitter, ref: ref)}
   end
 
@@ -128,9 +127,10 @@ defmodule Hypnotoad.Host.SSH.Channel do
   	{:noreply, state(s, status: status)}
   end
 
-  def handle_info({:ssh_cm, _, {:closed, _}}, state(from: from, data: data, status: status) = s) do
+  def handle_info({:ssh_cm, _, {:closed, _}}, state(connection: SSH[_connection: conn], from: from, data: data, status: status) = s) do
   	data = String.strip(data)
     :gen_server.reply(from, {status, data})
+    S.unlock({Hypnotoad.Host.SSH.Connection, conn})
     {:stop, :normal, s}
   end
 
