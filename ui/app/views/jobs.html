@@ -26,8 +26,9 @@
     	</thead>
     	<tbody>
     	  <tr style="display: none" ng-repeat-start="job in jobs"></tr>
-    	  	<tr>
-	    	  	<td>{{ job.module }}</td>
+    	  	<tr ng-class="{'warning': plan == job.module}">
+	    	  	<td ng-if="job.module != plan">{{ job.module }}</td>
+            <td ng-if="job.module == plan"><b>{{ job.module }}</b></td>
 	    	  	<td style="word-wrap: break-word; max-width: 200px;">{{ job.options }}</td>
 	    	  	<td>{{ job.host }}</td>
 	    	  	<td ng-if="job.status == 'failed'"><span class="label label-danger">{{ job.status }}</span></td>
@@ -40,11 +41,12 @@
             <td ng-if="job.status == 'excluded'"><span class="label label-success">{{ job.status }}</span></td>
 	    	  	<td ng-if="!job.showLog && job.output != nil && job.output != ''"><button class="btn btn-xs btn-info" ng-click="showLog($index)">Log</button></td>
             <td ng-if="job.showLog"><button class="btn btn-xs btn-info active" ng-click="showLog($index)">Log</button></td>
+            <td ng-if="job.output == nil || job.output == ''"></td>
+         </tr>
 	    	 <tr ng-if="job.showLog">
 		  		<td colspan="5">
 		  			<pre style="color: #eee; background: black; margin: 0; line-height: 1.3; font-family: monaco, "Courier New", Courier, monospace;" >{{job.output}}</pre>
 				</td>
-	    	 </tr>
     	  <tr style="display: none" ng-repeat-end></tr>	    
     	</tbody>
     </table>
