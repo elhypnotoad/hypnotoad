@@ -21,7 +21,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
     :gen_server.call(pid, {:download, file, ref}, :infinity)
   end
 
-  defrecordp :state, connection: nil, from: nil, data: "", status: 0, splitter: nil, ref: nil
+  defrecordp :state, connection: nil, from: nil, data: "", status: 0, splitter: nil, ref: nil, channel: nil
 
   def init(SSH[] = ssh) do
     {:ok, state(connection: ssh)}
@@ -50,7 +50,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
     else 
       :ssh_connection.exec(conn, ch, String.to_char_list!("sh /tmp/#{splitter} ; E=$? ; rm -f /tmp/#{splitter}; exit $E"), :infinity)
     end
-  	{:noreply, state(s, from: from, splitter: splitter, ref: ref)}
+  	{:noreply, state(s, from: from, splitter: splitter, ref: ref, channel: ch)}
   end
 
   def handle_call({:upload, file, content, ref}, _from, state(connection: SSH[_connection: conn] = ssh) = s) do
@@ -68,6 +68,8 @@ defmodule Hypnotoad.Host.SSH.Channel do
         """
         {:reply, :ok, s}
       {:error, :permission_denied} ->
+        :ssh_sftp.stop_channel(sftp_channel)
+        S.unlock({Hypnotoad.Host.SSH.Connection, conn})
         :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
         # Uploading #{file}, permission denied, re-trying
         """
@@ -78,8 +80,9 @@ defmodule Hypnotoad.Host.SSH.Channel do
         :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
         # Uploading #{file} to #{new_path} (temporarily)
         """
+        S.lock({Hypnotoad.Host.SSH.Connection, conn})
+        {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
         :ok = :ssh_sftp.write_file(sftp_channel, new_path, content)
-        :ssh_sftp.stop_channel(sftp_channel)
         S.unlock({Hypnotoad.Host.SSH.Connection, conn})
         :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
         # Uploading #{file}, moving from #{new_path}
@@ -127,9 +130,10 @@ defmodule Hypnotoad.Host.SSH.Channel do
   	{:noreply, state(s, status: status)}
   end
 
-  def handle_info({:ssh_cm, _, {:closed, _}}, state(connection: SSH[_connection: conn], from: from, data: data, status: status) = s) do
+  def handle_info({:ssh_cm, _, {:closed, _}}, state(connection: SSH[_connection: conn], channel: ch, from: from, data: data, status: status) = s) do
   	data = String.strip(data)
     :gen_server.reply(from, {status, data})
+    :ssh_connection.close(conn, ch)
     S.unlock({Hypnotoad.Host.SSH.Connection, conn})
     {:stop, :normal, s}
   end
