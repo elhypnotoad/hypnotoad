@@ -42,13 +42,15 @@ defmodule Hypnotoad.Semaphore do
   	{:noreply, state(s, pending: [from|pending])}
   end
 
-  def handle_call(:unlock, _from, state(counter: counter, max: max) = s) when counter <= max do
-    {:reply, :ok, state(s, counter: counter - 1)}
-  end
   def handle_call(:unlock, _from, state(pending: [from|tail]) = s) do
     :gen_server.reply(from, :ok)
     {:reply, :ok, state(s, pending: tail)}
   end
+
+  def handle_call(:unlock, _from, state(counter: counter, max: max) = s) when counter <= max do
+    {:reply, :ok, state(s, counter: counter - 1)}
+  end
+
 end
 
 defmodule Hypnotoad.Semaphore.Sup do
