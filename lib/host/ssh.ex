@@ -6,6 +6,7 @@ defimpl Hypnotoad.Host, for: Hypnotoad.Host.SSH do
   def connect!(SSH[host: host, port: port, user: user, password: nil] = ssh) do
     {:ok, c} = :ssh.connect(String.to_char_list!(host), port,
     	                   [user_interaction: false, user: String.to_char_list!(user), key_cb: Hypnotoad.KeyManager, silently_accept_hosts: true])
+    Hypnotoad.Semaphore.start({Hypnotoad.Host.SSH.Connection, c}, 9)
     ssh.update(_connection: c)
   end
 
@@ -13,6 +14,7 @@ defimpl Hypnotoad.Host, for: Hypnotoad.Host.SSH do
     {:ok, c} = :ssh.connect(String.to_char_list!(host), port,
                          [user_interaction: false, user: String.to_char_list!(user), key_cb: Hypnotoad.KeyManager, silently_accept_hosts: true,
                           password: String.to_char_list!(password)])
+    Hypnotoad.Semaphore.start({Hypnotoad.Host.SSH.Connection, c}, 9)
     ssh.update(_connection: c)
   end
 

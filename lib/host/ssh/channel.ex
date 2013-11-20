@@ -3,6 +3,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
   alias Hypnotoad.Host.SSH
   use GenServer.Behaviour
   use Hypnotoad.Common
+  alias Hypnotoad.Semaphore, as: S
 
   def start_link(conn) do
     :gen_server.start_link __MODULE__, conn, []
@@ -37,15 +38,19 @@ defmodule Hypnotoad.Host.SSH.Channel do
     #{cmd}
     # ))
     """
+    S.lock({Hypnotoad.Host.SSH.Connection, conn})
     {:ok, ch} = :ssh_connection.session_channel(conn, :infinity)
+    S.lock({Hypnotoad.Host.SSH.Connection, conn})
     {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
     :ok = :ssh_sftp.write_file(sftp_channel, Path.join(["/", "tmp", splitter]), file_content)
     :ssh_sftp.stop_channel(sftp_channel)
+    S.unlock({Hypnotoad.Host.SSH.Connection, conn})
     unless user == "root" do
     	:ssh_connection.exec(conn, ch, String.to_char_list!("sudo sh -c 'sh /tmp/#{splitter} ; echo $? > /tmp/#{splitter}' ; E=`cat /tmp/#{splitter}` ; rm -f /tmp/#{splitter}; exit $E"), :infinity)
     else 
       :ssh_connection.exec(conn, ch, String.to_char_list!("sh /tmp/#{splitter} ; E=$? ; rm -f /tmp/#{splitter}; exit $E"), :infinity)
     end
+    S.unlock({Hypnotoad.Host.SSH.Connection, conn})
   	{:noreply, state(s, from: from, splitter: splitter, ref: ref)}
   end
 
@@ -53,10 +58,12 @@ defmodule Hypnotoad.Host.SSH.Channel do
     :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
     # Uploading #{file}
     """
+    S.lock({Hypnotoad.Host.SSH.Connection, conn})
     {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
     case :ssh_sftp.write_file(sftp_channel, file, content) do
       :ok ->
         :ssh_sftp.stop_channel(sftp_channel)
+        S.unlock({Hypnotoad.Host.SSH.Connection, conn})
         :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
         # Uploading #{file} complete
         """
@@ -74,6 +81,7 @@ defmodule Hypnotoad.Host.SSH.Channel do
         """
         :ok = :ssh_sftp.write_file(sftp_channel, new_path, content)
         :ssh_sftp.stop_channel(sftp_channel)
+        S.unlock({Hypnotoad.Host.SSH.Connection, conn})
         :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
         # Uploading #{file}, moving from #{new_path}
         """
@@ -90,9 +98,11 @@ defmodule Hypnotoad.Host.SSH.Channel do
     :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
     # Downloading #{file}
     """
+    S.lock({Hypnotoad.Host.SSH.Connection, conn})
     {:ok, sftp_channel} = :ssh_sftp.start_channel(conn)
     {:ok, data} = :ssh_sftp.read_file(sftp_channel, file)
     :ssh_sftp.stop_channel(sftp_channel)
+    S.unlock({Hypnotoad.Host.SSH.Connection, conn})
     :gproc_ps.publish(:l, {Hypnotoad.Shell, ref}, """)
     # Downloading #{file} complete
     """

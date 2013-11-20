@@ -7,6 +7,7 @@ defmodule Hypnotoad.Sup do
 
   def init([]) do
     children = [
+      supervisor(Hypnotoad.Semaphore.Sup, []),
       worker(Hypnotoad.KeyManager, []),
       worker(Hypnotoad.Hosts, []),
       worker(Hypnotoad.Modules, []),
