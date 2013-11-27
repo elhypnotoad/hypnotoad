@@ -37,7 +37,9 @@ defmodule Hypnotoad.Modules do
     Enum.each(modules, fn({module, _}) ->
       if module.plan?, do: Hypnotoad.Plan.start(module: module)      
     end)
-    L.debug "Loaded modules ${modules}", modules: modules
+    Enum.each(modules, fn({module, file}) ->
+      L.debug "Loaded module ${module} (${file})", module: module, file: file
+    end)
     :gproc_ps.publish :l, {__MODULE__, :modules_reloaded}, modules
   	{:noreply, state(s, modules: modules)}
   end
