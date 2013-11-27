@@ -31,3 +31,6 @@ angular.module('uiApp')
       (job.host.match(RegExp(filter,'i')) != null) or
       (job.output.match(RegExp(filter,'i')) != null) or
       (job.optionsText.match(RegExp(filter,'i')) != null)
+
+    $scope.findJob = (host, name, options) ->
+      _.find($scope.jobs, (j) -> j.host is host and j.module is name and _.isEqual(j.options, options))
