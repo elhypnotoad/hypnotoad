@@ -52,10 +52,12 @@ defmodule Hypnotoad.Plan do
   defp start_module(host, module, args, overrides) do
     Process.put(:host, host)
     result = if module.before_filter(args) do
-      reqs = module.requirements(args) ++ Enum.map(:ets.lookup(overrides, {host, module, args}), fn({_, {m, a}}) ->
+      reqs = Enum.map(module.requirements(args) ++ Enum.map(:ets.lookup(overrides, {host, module, args}), fn({_, {m, a}}) ->
         {m, a, nil}
-      end)
-      requirements = Enum.reduce(reqs, [], fn({req_mod, req_args, _parent}, acc) ->
+      end), fn({m, a, _}) ->
+        {m, a}
+      end) |> Enum.uniq
+      requirements = Enum.reduce(reqs, [], fn({req_mod, req_args}, acc) ->
         if start_module(host, req_mod, req_args, overrides) do
           [{req_mod, req_args}|acc]
         else
