@@ -2,14 +2,6 @@ defmodule Hypnotoad.Module do
 
   use Hypnotoad.Common
 
-  #defmacro requires(name, do: block) do
-  #  name = Macro.escape(name)
-  #  opts = Macro.escape(block)
-  #  quote do
-  #    @hypnotoad_requirements {unquote(name), unquote(opts)}
-  #  end
-  #end
-
   defmacro requires(name, opts, block_opts) do
     __requires__(name, opts, block_opts)
   end
