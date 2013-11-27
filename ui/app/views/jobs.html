@@ -57,14 +57,14 @@
             <h4>Requirements</h4>
             <ul>
               <li ng-repeat="req in job.requirements">
-                <span ng-if="findJob(job.host, req.name, req.opts).status == 'failed'" class="label label-danger">{{ findJob(req.name, req.opts).status }}</span>
+                <span ng-if="findJob(job.host, req.name, req.opts).status == 'failed'" class="label label-danger">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 <span ng-if="findJob(job.host, req.name, req.opts).status == 'success'" class="label label-success">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 <span ng-if="findJob(job.host, req.name, req.opts).status == 'testing'" class="label label-warning">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 <span ng-if="findJob(job.host, req.name, req.opts).status == 'running'" class="label label-primary">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 <span ng-if="findJob(job.host, req.name, req.opts).status == 'post_test'" class="label label-warning">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 <span ng-if="findJob(job.host, req.name, req.opts).status == 'ready'" class="label label-default">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 <span ng-if="findJob(job.host, req.name, req.opts).status == 'pending'" class="label label-default">{{ findJob(job.host, req.name, req.opts).status }}</span>
-                <span ng-if="findJob(job.host, req.name, req.opts).status == 'excluded'"class="label label-success">{{ findJob(req.name, req.opts).status }}</span>
+                <span ng-if="findJob(job.host, req.name, req.opts).status == 'excluded'"class="label label-success">{{ findJob(job.host, req.name, req.opts).status }}</span>
                 {{ req.name }} {{ req.opts }}
               </li>
             </ul>
