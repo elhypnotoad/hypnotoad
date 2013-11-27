@@ -22,7 +22,7 @@
     			<td>Options</td>
     			<td>Host</td>
     			<td>Status</td>
-    			<td></td>
+    			<td style="min-width: 100px"></td>
     		</tr>
     	</thead>
     	<tbody>
@@ -40,14 +40,28 @@
 	    	  	<td ng-if="job.status == 'ready'"><span class="label label-default">{{ job.status }}</span></td>
             <td ng-if="job.status == 'pending'"><span class="label label-default">{{ job.status }}</span></td>
             <td ng-if="job.status == 'excluded'"><span class="label label-success">{{ job.status }}</span></td>
-	    	  	<td ng-if="!job.showLog && job.output != nil && job.output != ''"><button class="btn btn-xs btn-info" ng-click="showLog($index)">Log</button></td>
-            <td ng-if="job.showLog"><button class="btn btn-xs btn-info active" ng-click="showLog($index)">Log</button></td>
-            <td ng-if="job.output == nil || job.output == ''"></td>
+	    	  	<td>
+              <button ng-if="!job.showLog && job.output != nil && job.output != ''" class="btn btn-xs btn-info" ng-click="showLog($index)">Log</button>
+              <button ng-if="job.showLog" class="btn btn-xs btn-info active" ng-click="showLog($index)">Log</button>
+              <button ng-if="!job.showReqs && job.requirements.length > 0" class="btn btn-xs btn-success" ng-click="showReqs($index)">Reqs</button>
+              <button ng-if="job.showReqs && job.requirements.length > 0" class="btn btn-xs btn-success active" ng-click="showReqs($index)">Reqs</button>
+            </td>
          </tr>
 	    	 <tr ng-if="job.showLog && match(job, filter)">
 		  		<td colspan="5">
 		  			<pre style="color: #eee; background: black; margin: 0; line-height: 1.3; font-family: monaco, "Courier New", Courier, monospace;" >{{job.output}}</pre>
-				</td>
+  				</td>
+         </tr>
+         <tr ng-if="job.showReqs && match(job, filter)">
+          <td colspan="5" class="success well">
+            <h4>Requirements</h4>
+            <ul>
+              <li ng-repeat="req in job.requirements">
+                {{ req.name }} {{ req.opts }}
+              </li>
+            </ul>
+          </td>
+         </tr>
     	  <tr style="display: none" ng-repeat-end></tr>	    
     	</tbody>
     </table>

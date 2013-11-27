@@ -14,9 +14,12 @@ angular.module('uiApp')
     $scope.showLog = (i) ->
       $scope.jobs[i].showLog = not $scope.jobs[i].showLog
 
+    $scope.showReqs = (i) ->
+      $scope.jobs[i].showReqs = not $scope.jobs[i].showReqs
+
     Channel.connected().then (ch) ->
       ch.send({command: "jobs", plan: $scope.plan }).then (resp) ->
-       jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {optionsText: angular.toJson(job.options), showLog: _.find($scope.jobs, (j) -> j.id == job.id)?.showLog}))
+       jobs = _.map(resp.jobs, (job, i) -> angular.extend(job, {optionsText: angular.toJson(job.options), showLog: _.find($scope.jobs, (j) -> j.id == job.id)?.showLog, showReqs: _.find($scope.jobs, (j) -> j.id == job.id)?.showReqs}))
        $scope.jobs = jobs
 
     $scope.identity = (job) ->

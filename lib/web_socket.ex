@@ -130,9 +130,12 @@ defmodule Hypnotoad.WebSocket do
       options = opts[:options]
       if options == [], do: options = [{}]
       hash = :erlang.phash2({opts[:module], options, host})
+      reqs = Enum.map(opts[:requirements], fn({mod, opts}) ->
+        [name: inspect(mod), opts: inspect(opts)]
+      end)
       [module: inspect(opts[:module]), options: options, host: host,
        status: "#{opts[:status]}", output: opts[:output],
-       id: "#{hash}"]
+       id: "#{hash}", requirements: reqs]
     end)
     reply(packet, [jobs: jobs])
   end
