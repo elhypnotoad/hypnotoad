@@ -23,23 +23,37 @@ defmodule Hypnotoad.Plan do
 
   def init(opts) do
     :gproc.add_local_property(__MODULE__, Keyword.put(opts, :status, :ready))
-    {:ok, state(module: opts[:module], overrides: :ets.new(__MODULE__.Overrides, []))}
+    {:ok, state(module: opts[:module], overrides: :ets.new(__MODULE__.Overrides, [:bag]))}
   end
 
   def handle_call(:module, _from, state(module: module) = s) do
     {:reply, module, s}
   end
 
+  defp prepare_overrides(host, module, args, overrides) do
+    Process.put(:host, host)
+    result = if module.before_filter(args) do
+      Enum.each(module.requirements(args), fn({req_mod, req_args, parent}) ->
+        if parent do
+          {m, a} = parent
+          :ets.insert(overrides, {{host, m, a}, {req_mod, req_args}})
+          prepare_overrides(host, m, a, overrides) 
+        end
+        prepare_overrides(host, req_mod, req_args, overrides) 
+      end)
+      true
+    else
+      false
+    end
+    Process.delete(:host)
+    result
+  end
+
   defp start_module(host, module, args, overrides) do
     Process.put(:host, host)
     result = if module.before_filter(args) do
-      reqs = module.requirements(args) ++ Enum.map(:ets.lookup(overrides, {module, args}), fn({_, {m, a}}) ->
+      reqs = module.requirements(args) ++ Enum.map(:ets.lookup(overrides, {host, module, args}), fn({_, {m, a}}) ->
         {m, a, nil}
-      end)
-      Enum.each(reqs, fn({req_mod, req_args, parent}) ->
-        if parent do
-          :ets.insert(overrides, {{req_mod, req_args}, parent})
-        end
       end)
       requirements = Enum.reduce(reqs, [], fn({req_mod, req_args, _parent}, acc) ->
         if start_module(host, req_mod, req_args, overrides) do
@@ -69,6 +83,7 @@ defmodule Hypnotoad.Plan do
         :gproc_ps.subscribe(:l, {Hypnotoad.Job, host, :excluded})
       rescue _ ->
       end
+      prepare_overrides(host, module, [], overrides)
       start_module(host, module, [], overrides)
     end)
     :gen_server.cast(self, :ready)
