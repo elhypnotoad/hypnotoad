@@ -11,7 +11,7 @@
 
 <div class="panel" ng:class="{'panel-info': planObject.status == 'ready', 'panel-primary': planObject.status == 'running', 'panel-success': planObject.status == 'done', 'panel-danger': planObject.status == 'failed'}" ng-if="planObject.start_timestamp != undefined">
   <div class="panel-heading">
-  	Jobs Execution (Started {{ planObject.start_timestamp * 1000|date:'medium' }}<span ng-if="planObject.end_timestamp">, finished {{ planObject.end_timestamp * 1000|date:'medium' }}</span>)
+  	Jobs Execution ({{ completedJobs() / jobs.length * 100 | number: 0 }}% complete, started {{ planObject.start_timestamp * 1000|date:'medium' }}<span ng-if="planObject.end_timestamp">, finished {{ planObject.end_timestamp * 1000|date:'medium' }}</span>)
     <input type="sarch" class="form-control input-sm" placeholder="Filter" class="pull-right" ng-model="filter">
   </div>
   <div class="panel-body">
