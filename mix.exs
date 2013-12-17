@@ -4,14 +4,14 @@ defmodule Hypnotoad.Mixfile do
   def project do
     [ app: :hypnotoad,
       version: "0.0.1",
-      elixir: "~> 0.11.1-dev",
+      elixir: ">= 0.12.0",
       build_per_environment: true,
       deps: deps ]
   end
 
   # Configuration for the OTP application
   def application do
-    [ applications: %w(ssh gproc exlogger cowboy)a ++ applications(Mix.env),
+    [ applications: %w(ssh gproc exlogger cowboy exconfig)a ++ applications(Mix.env),
       env: [http_port: 15080],
       mod: { Hypnotoad, [] }]
   end
@@ -26,6 +26,7 @@ defmodule Hypnotoad.Mixfile do
      {:cowboy,   github: "extend/cowboy"},
      {:jsex,     github: "talentdeficit/jsex"},
      {:socket,   github: "meh/elixir-socket"},
+     {:exconfig, github: "yrashk/exconfig"},
     ] ++ deps(Mix.env)
   end
 

@@ -29,7 +29,7 @@ defmodule Hypnotoad.Hosts do
   end
 
   def handle_cast(:init, state()) do
-    {hosts, _} = Path.join(Hypnotoad.path, "hosts") |> File.read! |> Code.eval_string()
+    hosts = Hypnotoad.config.hosts
     hosts =
   	Enum.map(hosts, fn
       ({{name, opts}, facts}) when is_list(facts) ->

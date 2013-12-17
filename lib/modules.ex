@@ -25,13 +25,21 @@ defmodule Hypnotoad.Modules do
   	modules = Path.join([Hypnotoad.path, "**/**.exs"])
   	|> Path.wildcard
   	|> Enum.map(fn(file) ->
-      Enum.reduce(Code.load_file(file), [], fn({module, _binary}, acc) ->
-        if hypnotoad_module?(module) do
-          [{module, file}|acc]
-        else
-          acc
+      try do
+        loaded = Code.load_file(file)
+        Enum.reduce(loaded, [], fn({module, _binary}, acc) ->
+          if hypnotoad_module?(module) do
+            [{module, file}|acc]
+          else
+            acc
+          end
+        end)
+      rescue e in [CompileError] ->
+        unless e.message =~ %r{you must require Hypnotoad.Config before invoking the macro Hypnotoad.Config.config} do
+          L.alert "Failed compiling ${file}, compile error ${e}", file: file, e: e
         end
-      end)
+        []
+      end
   	end)
     |> List.flatten |> Enum.reverse
     Enum.each(modules, fn({module, _}) ->
