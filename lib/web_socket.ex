@@ -24,8 +24,9 @@ defmodule Hypnotoad.WebSocket do
   end
 
   def websocket_info({:send, packet}, req, s) do
-  	L.verbose "Sending WebSocket response: ${packet}", packet: packet |> JSEX.encode! |> JSEX.decode!
-  	{:reply, {:text, JSEX.encode!(packet)}, req, s}
+    encoded_packet = encode_packet(packet)
+  	L.debug "Sending WebSocket response: ${packet}", packet: JSEX.decode!(encoded_packet)
+  	{:reply, {:text, encoded_packet}, req, s}
   end
 
 
@@ -153,4 +154,29 @@ defmodule Hypnotoad.WebSocket do
   defp subscribe(packet, event, fun) do
   	self <- {:subscribe, packet["id"], event, fun}
   end
+
+  defp encode_packet(packet) do
+    case JSEX.encode(packet) do
+      {:ok, encoded} -> encoded
+      _ ->
+       JSEX.encode!(filter_non_json(packet))
+    end
+  end
+
+  defp filter_non_json(list) when is_list(list) do
+    lc i inlist list, do: filter_non_json(i)
+  end
+  defp filter_non_json({key, value}) when is_atom(key) do
+    {key, filter_non_json(value)}
+  end
+  defp filter_non_json({key, value}) do
+    {filter_non_json(key),   filter_non_json(value)}
+  end
+  defp filter_non_json(item) do
+    case JSEX.encode(item) do
+      {:ok, _} -> item
+      _ -> "<< unknown format (non JSON) >>"
+    end
+  end
+
 end
