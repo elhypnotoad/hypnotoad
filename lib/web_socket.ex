@@ -163,6 +163,7 @@ defmodule Hypnotoad.WebSocket do
     end
   end
 
+  defp filter_non_json([{}]), do: [{}]
   defp filter_non_json(list) when is_list(list) do
     lc i inlist list, do: filter_non_json(i)
   end
@@ -175,7 +176,7 @@ defmodule Hypnotoad.WebSocket do
   defp filter_non_json(item) do
     case JSEX.encode(item) do
       {:ok, _} -> item
-      _ -> "<< unknown format (non JSON) >>"
+      _ -> "<< #{inspect(item)} (non-JSON) >>"
     end
   end
 
