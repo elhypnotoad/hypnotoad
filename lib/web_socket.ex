@@ -25,7 +25,7 @@ defmodule Hypnotoad.WebSocket do
 
   def websocket_info({:send, packet}, req, s) do
     encoded_packet = encode_packet(packet)
-  	L.debug "Sending WebSocket response: ${packet}", packet: JSEX.decode!(encoded_packet)
+  	L.verbose "Sending WebSocket response: ${packet}", packet: JSEX.decode!(encoded_packet)
   	{:reply, {:text, encoded_packet}, req, s}
   end
 
